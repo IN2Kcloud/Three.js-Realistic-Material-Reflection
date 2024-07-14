@@ -43,44 +43,39 @@
             pointlight.position.set(200,200,200);
             scene.add(pointlight);
 
-            let envmaploader = new THREE.PMREMGenerator(renderer);
+            const envmaploader = new THREE.PMREMGenerator(renderer);
+            envmaploader.compileEquirectangularShader();
 
             new RGBELoader().setPath('textures/').load('tucker_wreck_1k.hdr', function(hdrmap) {
+                const envmap = envmaploader.fromEquirectangular(hdrmap);
 
-                let envmap = envmaploader.fromCubemap(hdrmap);
-
-                let texture = new THREE.CanvasTexture(new FlakesTexture());
+                const texture = new THREE.CanvasTexture(new FlakesTexture());
                 texture.wrapS = THREE.RepeatWrapping;
                 texture.wrapT = THREE.RepeatWrapping;
-                //repeat the wrapping 10 (x) and 6 (y) times
                 texture.repeat.x = 10;
                 texture.repeat.y = 6;
 
-                const ballMaterial = {
+                const ballMaterial = new THREE.MeshPhysicalMaterial({
                     clearcoat: 1.0,
-                    cleacoatRoughness:0.1,
+                    clearcoatRoughness: 0.1,
                     metalness: 0.9,
-                    roughness:0.5,
+                    roughness: 0.5,
                     color: 0x8418ca,
                     normalMap: texture,
-                    normalScale: new THREE.Vector2(0.15,0.15),
-                    envMap: envmap.texture // Placeholder for the envMap
-                };
+                    normalScale: new THREE.Vector2(0.15, 0.15),
+                    envMap: envmap.texture
+                });
 
-            let ballGeo = new THREE.SphereGeometry(100,64,64);
-            let ballMat = new THREE.MeshPhysicalMaterial(ballMaterial);
-            let ballMesh = new THREE.Mesh(ballGeo,ballMat);
-            scene.add(ballMesh);
+                const ballGeo = new THREE.SphereGeometry(100, 64, 64);
+                const ballMesh = new THREE.Mesh(ballGeo, ballMaterial);
+                scene.add(ballMesh);
 
-            
-            ballMaterial.envMap = envmap.texture;
+                animate();
             });
 
             controls.autoRotate = true;
             controls.autoRotateSpeed = 0.5;
             controls.enableDamping = true;
-
-            animate(); // rendering loop
         }
 
         function animate() {
@@ -88,8 +83,7 @@
             renderer.render(scene, camera);
             requestAnimationFrame(animate);
         }
-        init();     
-
+        init();
     </script>
     
 </body>
